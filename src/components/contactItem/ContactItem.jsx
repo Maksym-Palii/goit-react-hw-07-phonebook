@@ -1,12 +1,17 @@
 import css from 'components/contactItem/ContactItem.module.css';
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteContact } from 'redux/contactsSlice';
+import { deleteContact } from 'redux/operations';
+import {
+  getContacts,
+  getError,
+  getFilterContacts,
+  getIsLoading,
+} from 'redux/selectors';
+import { RotatingLines } from 'react-loader-spinner';
 
 export const ContactItem = () => {
-  const contacts = useSelector(state => state.contacts);
-  const contactsFilter = useSelector(state => state.filter);
-
-  const dispatch = useDispatch();
+  const contacts = useSelector(getContacts);
+  const contactsFilter = useSelector(getFilterContacts);
 
   const getVisibleContacts = () => {
     const normalizedFilter = contactsFilter.toLowerCase();
@@ -16,19 +21,23 @@ export const ContactItem = () => {
   };
   const renderContacts = getVisibleContacts();
 
+  const dispatch = useDispatch();
+
+  const isLoading = useSelector(getIsLoading);
+  const error = useSelector(getError);
   return (
     <>
-      {renderContacts.map(({ id, name, number }) => (
+      {renderContacts.map(({ id, name, phone }) => (
         <li className={css.item} key={id}>
-          <p className={css.text}>
-            {name}: {number}
-          </p>
+          <p className={(css.text, css.name)}>{name}:</p>
+          <p className={css.text}>{phone}</p>
           <button
             className={css.btn}
             type="button"
+            disabled={isLoading}
             onClick={() => dispatch(deleteContact(id))}
           >
-            Delete
+            {isLoading && !error && <RotatingLines width="12" />}Delete
           </button>
         </li>
       ))}
